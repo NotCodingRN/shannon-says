@@ -63,6 +63,17 @@ Shannon capacity     259 Mbit/s
 Link margin          +13.94 dB  (closes)
 ```
 
+**Eb/N0 vs SNR**, and how far you are from the Shannon limit:
+
+```console
+$ shannon-says ebn0 --rate 100M --bw 20MHz --snr 5dB
+Rate / bandwidth     100 Mbit/s / 20 MHz  (5 bit/s/Hz)
+Eb/N0                -1.99 dB
+SNR                  5.00 dB
+Shannon minimum      7.92 dB Eb/N0 at this efficiency
+Gap to the limit     -9.91 dB  (impossible, no code can do this)
+```
+
 Add `-q` before the command to drop the commentary.
 
 ## Install

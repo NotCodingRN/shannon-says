@@ -98,6 +98,29 @@ def cmd_link(a) -> None:
     say(lines, a.quiet)
 
 
+def cmd_ebn0(a) -> None:
+    rate = units.rate(a.rate)
+    bw = units.frequency(a.bandwidth)
+    if (a.ebn0 is None) == (a.snr is None):
+        raise UnitError("give exactly one of --ebn0 or --snr")
+    if a.ebn0 is not None:
+        ebn0 = units.ratio_db(a.ebn0)
+        snr = core.ebn0_to_snr(ebn0, rate, bw)
+    else:
+        snr = units.ratio_db(a.snr)
+        ebn0 = core.snr_to_ebn0(snr, rate, bw)
+    eta = rate / bw
+    floor = core.ebn0_min_db(eta)
+    gap = ebn0 - floor
+    say([
+        f"Rate / bandwidth     {units.pretty_rate(rate)} / {units.pretty_freq(bw)}  ({eta:.3g} bit/s/Hz)",
+        f"Eb/N0                {ebn0:.2f} dB",
+        f"SNR                  {snr:.2f} dB",
+        f"Shannon minimum      {floor:.2f} dB Eb/N0 at this efficiency",
+        f"Gap to the limit     {gap:+.2f} dB  ({'possible' if gap >= 0 else 'impossible, no code can do this'})",
+    ], a.quiet)
+
+
 # ---------------------------------------------------------------- parser
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="shannon-says", description="Tiny comms-engineering calculator.")
@@ -135,6 +158,13 @@ def build_parser() -> argparse.ArgumentParser:
     lk.add_argument("--nf", default="0dB", help="receiver noise figure (default 0dB)")
     lk.add_argument("--required", help="SNR your modem needs, e.g. 10dB -> prints link margin")
     lk.set_defaults(func=cmd_link)
+
+    e = sub.add_parser("ebn0", help="convert Eb/N0 <-> SNR and compare to the Shannon limit")
+    e.add_argument("--rate", required=True, help="bit rate, e.g. 10M")
+    e.add_argument("--bw", dest="bandwidth", required=True, help="bandwidth, e.g. 20MHz")
+    e.add_argument("--ebn0", help="energy per bit to noise density, e.g. 10dB")
+    e.add_argument("--snr", help="signal-to-noise ratio, e.g. 7dB")
+    e.set_defaults(func=cmd_ebn0)
     return p
 
 
