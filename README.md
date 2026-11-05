@@ -36,6 +36,28 @@ $ shannon-says db 3dB
 3 dB = 1.995x power  (1.413x amplitude)
 ```
 
+**Free-space path loss**:
+
+```console
+$ shannon-says fspl --freq 2.4GHz --distance 100m
+Frequency            2.4 GHz  (wavelength 12.5 cm)
+Distance             100 m
+Free-space loss      80.05 dB
+```
+
+**Full link budget**: TX power, antennas, path loss, noise floor, SNR, capacity and margin in one go:
+
+```console
+$ shannon-says link --tx 20dBm --freq 2.4GHz --distance 100m --bw 20MHz \
+                    --gtx 2dB --grx 2dB --nf 6dB --required 25dB
+Free-space loss      80.05 dB
+Received power       -56.05 dBm
+Noise floor          -94.99 dBm
+SNR                  38.94 dB
+Shannon capacity     259 Mbit/s
+Link margin          +13.94 dB  (closes)
+```
+
 Add `-q` before the command to drop the commentary.
 
 ## Install
