@@ -30,6 +30,19 @@ def frequency(text: str) -> float:
     return value * FREQ[unit]
 
 
+def rate(text: str) -> float:
+    """'100M', '100Mbps', '100Mbit/s', '64k' -> bit/s."""
+    value, unit = _split(text)
+    for suffix in ("bit/s", "bps", "b/s", "b"):
+        if unit.endswith(suffix):
+            unit = unit[: -len(suffix)]
+            break
+    scale = {"": 1.0, "k": 1e3, "m": 1e6, "g": 1e9, "t": 1e12}.get(unit)
+    if scale is None:
+        raise UnitError(f"can't read rate {text!r} (try 100M, 100Mbps, 1.5Gbit/s)")
+    return value * scale
+
+
 def distance(text: str) -> float:
     """'5km' -> 5000 (m). A bare number is taken as metres."""
     value, unit = _split(text)
