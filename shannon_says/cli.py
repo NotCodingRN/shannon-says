@@ -68,6 +68,36 @@ def cmd_db(a) -> None:
     say(lines, a.quiet)
 
 
+def cmd_fspl(a) -> None:
+    f = units.frequency(a.freq)
+    d = units.distance(a.distance)
+    say([
+        f"Frequency            {units.pretty_freq(f)}  (wavelength {core.wavelength(f) * 100:.3g} cm)",
+        f"Distance             {d:g} m",
+        f"Free-space loss      {core.fspl_db(d, f):.2f} dB",
+    ], a.quiet)
+
+
+def cmd_link(a) -> None:
+    r = core.link_budget(
+        tx_dbm=units.power_dbm(a.tx), freq_hz=units.frequency(a.freq), distance_m=units.distance(a.distance),
+        bandwidth_hz=units.frequency(a.bandwidth), tx_gain_db=units.ratio_db(a.gtx),
+        rx_gain_db=units.ratio_db(a.grx), losses_db=units.ratio_db(a.losses),
+        noise_figure_db=units.ratio_db(a.nf),
+    )
+    lines = [
+        f"Free-space loss      {r['fspl_db']:.2f} dB",
+        f"Received power       {r['rx_dbm']:.2f} dBm",
+        f"Noise floor          {r['noise_dbm']:.2f} dBm",
+        f"SNR                  {r['snr_db']:.2f} dB",
+        f"Shannon capacity     {units.pretty_rate(r['capacity_bps']) if r['snr_db'] > -30 else 'basically nothing'}",
+    ]
+    if a.required:
+        margin = r["snr_db"] - units.ratio_db(a.required)
+        lines.append(f"Link margin          {margin:+.2f} dB  ({'closes' if margin >= 0 else 'does NOT close'})")
+    say(lines, a.quiet)
+
+
 # ---------------------------------------------------------------- parser
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="shannon-says", description="Tiny comms-engineering calculator.")
@@ -88,6 +118,23 @@ def build_parser() -> argparse.ArgumentParser:
     d = sub.add_parser("db", help="convert dB / dBm / dBW / W / linear ratios")
     d.add_argument("value", help="e.g. 3dB, 30dBm, 0dBW, 100mW, 2")
     d.set_defaults(func=cmd_db)
+
+    f = sub.add_parser("fspl", help="free-space path loss")
+    f.add_argument("--freq", required=True, help="carrier frequency, e.g. 2.4GHz")
+    f.add_argument("--distance", required=True, help="distance, e.g. 100m or 5km")
+    f.set_defaults(func=cmd_fspl)
+
+    lk = sub.add_parser("link", help="free-space link budget -> SNR and capacity")
+    lk.add_argument("--tx", required=True, help="transmit power, e.g. 20dBm or 100mW")
+    lk.add_argument("--freq", required=True, help="carrier frequency, e.g. 2.4GHz")
+    lk.add_argument("--distance", required=True, help="distance, e.g. 100m")
+    lk.add_argument("--bw", dest="bandwidth", required=True, help="receiver bandwidth, e.g. 20MHz")
+    lk.add_argument("--gtx", default="0dB", help="TX antenna gain (default 0dB)")
+    lk.add_argument("--grx", default="0dB", help="RX antenna gain (default 0dB)")
+    lk.add_argument("--losses", default="0dB", help="cable/misc losses (default 0dB)")
+    lk.add_argument("--nf", default="0dB", help="receiver noise figure (default 0dB)")
+    lk.add_argument("--required", help="SNR your modem needs, e.g. 10dB -> prints link margin")
+    lk.set_defaults(func=cmd_link)
     return p
 
 
