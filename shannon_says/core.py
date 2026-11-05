@@ -75,3 +75,22 @@ def snr_needed(bandwidth_hz: float, rate_bps: float) -> float:
     if bandwidth_hz <= 0 or rate_bps <= 0:
         raise ValueError("bandwidth and rate must be > 0")
     return linear_to_db(2 ** (rate_bps / bandwidth_hz) - 1)
+
+
+def ebn0_to_snr(ebn0_db: float, rate_bps: float, bandwidth_hz: float) -> float:
+    """SNR = Eb/N0 * (R / B)  ->  in dB: Eb/N0 + 10*log10(R/B)."""
+    return ebn0_db + 10 * math.log10(rate_bps / bandwidth_hz)
+
+
+def snr_to_ebn0(snr_db: float, rate_bps: float, bandwidth_hz: float) -> float:
+    return snr_db - 10 * math.log10(rate_bps / bandwidth_hz)
+
+
+def ebn0_min_db(spectral_eff: float) -> float:
+    """Smallest Eb/N0 that can work at spectral efficiency eta (bit/s/Hz): (2^eta - 1) / eta.
+
+    Tends to the -1.59 dB Shannon limit as eta -> 0.
+    """
+    if spectral_eff <= 0:
+        return SHANNON_LIMIT_EBN0_DB
+    return linear_to_db((2 ** spectral_eff - 1) / spectral_eff)

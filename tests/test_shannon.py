@@ -55,6 +55,15 @@ class TestCore(unittest.TestCase):
     def test_shannon_limit(self):
         self.assertAlmostEqual(core.SHANNON_LIMIT_EBN0_DB, -1.59, places=2)
 
+    def test_ebn0_snr_roundtrip(self):
+        snr = core.ebn0_to_snr(10, 10e6, 20e6)  # R/B = 0.5 -> -3.01 dB
+        self.assertAlmostEqual(snr, 6.99, places=2)
+        self.assertAlmostEqual(core.snr_to_ebn0(snr, 10e6, 20e6), 10)
+
+    def test_ebn0_minimum(self):
+        self.assertAlmostEqual(core.ebn0_min_db(1), 0.0, places=6)      # (2^1-1)/1 = 1 -> 0 dB
+        self.assertAlmostEqual(core.ebn0_min_db(1e-9), -1.59, places=2)  # approaches the limit
+
 
 class TestCli(unittest.TestCase):
     def run_cli(self, *args):
