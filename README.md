@@ -1,5 +1,10 @@
 # shannon-says 📡
 
+[![tests](https://github.com/NotCodingRN/shannon-says/actions/workflows/tests.yml/badge.svg)](https://github.com/NotCodingRN/shannon-says/actions/workflows/tests.yml)
+![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)
+![dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen)
+![license](https://img.shields.io/badge/license-MIT-blue)
+
 > *Information is surprise. This calculator tries very hard not to be.*
 
 A tiny command-line calculator for communications engineering: the stuff you redo on paper every lab.
@@ -70,6 +75,14 @@ shannon-says --help
 ```
 
 No dependencies, just Python 3.9+.
+
+## Tests
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Reference checks include the 1 MHz / SNR 31 → 5 Mbit/s textbook case, FSPL at 1 GHz / 1 km = 92.45 dB, and the −1.59 dB Shannon limit.
 
 ## License
 
