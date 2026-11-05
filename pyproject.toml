@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shannon-says"
+version = "0.1.0"
+description = "Tiny comms-engineering calculator: channel capacity, dB math, path loss, link budgets."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Alaa Mohamed Alaaeldin Abdelrazik" }]
+dependencies = []
+
+[project.scripts]
+shannon-says = "shannon_says.cli:main"
+
+[tool.setuptools]
+packages = ["shannon_says"]
